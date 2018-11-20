@@ -3,6 +3,7 @@ package httpmux
 import (
 	"net/http"
 	"path"
+	"strings"
 )
 
 // Mux type
@@ -30,7 +31,14 @@ func (m *Mux) Handle(pattern string, handler http.Handler) {
 	if m.middleware != nil {
 		handler = m.middleware(handler)
 	}
-	m.m.Handle(path.Join(m.prefix, pattern), handler)
+
+	trailingSlash := len(pattern) > 1 && strings.HasSuffix(pattern, "/")
+	pattern = path.Join(m.prefix, pattern)
+	if trailingSlash {
+		pattern += "/"
+	}
+
+	m.m.Handle(pattern, handler)
 }
 
 // HandleFunc registers handler into mux
